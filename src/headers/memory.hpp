@@ -1,0 +1,59 @@
+#pragma once
+#include "utils.hpp"
+
+using memory_t = std::array<uint8_t, MEMORY_SIZE>;
+
+class Memory
+{
+private:
+    memory_t memory_buffer{};
+    
+    void loadFonts() noexcept
+    {
+        std::array<uint8_t, FONT_BUFFER_SIZE> font_buffer = {
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        };
+
+        std::copy(std::begin(font_buffer), std::end(font_buffer), std::begin(memory_buffer) + FONT_BUFFER_OFFSET);
+    }
+
+public:
+    Memory() noexcept
+    {
+        loadFonts();
+    }
+
+    void loadProgram(const std::string& bin_path) noexcept
+    {
+        std::ifstream ifs {bin_path, std::ios::binary};
+
+        // 0x000 to 0x1FF is reserved
+        int idx {PROGRAM_OFFSET};
+
+        while (ifs.good())
+        {
+            memory_buffer[idx] = ifs.get();
+            idx++;
+        }
+    }
+
+    uint8_t getByte(int offset) const noexcept
+    {
+        return memory_buffer[offset];
+    }
+};
