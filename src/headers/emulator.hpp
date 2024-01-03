@@ -18,9 +18,12 @@ private:
             {
                 if (display.get(x, y) == Pixel::on)
                 {
-                    sf::RectangleShape rect{{3, 3}};
+                    sf::RectangleShape rect{{PIXEL_SIZE, PIXEL_SIZE}};
                     rect.setFillColor(sf::Color::White);
-                    rect.setPosition({x * 3.0f, y * 3.0f});
+
+                    constexpr float scale {static_cast<float>(PIXEL_SIZE)};
+                    rect.setPosition({x * scale, y * scale});
+                    
                     window.draw(rect);
                 }
             }
@@ -46,7 +49,9 @@ public:
                     window.close();
             }
 
-            cpu.execute();
+            Instruction inst {cpu.fetch()};
+            cpu.decode(inst);
+
             draw();
 
             window.display();

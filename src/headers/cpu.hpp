@@ -50,43 +50,75 @@ private:
         index_reg = (inst.second_nibble << 8) | (inst.third_nibble << 4) | inst.fourth_nibble;
     }
 
-    void draw(const Instruction& inst) noexcept
+    void processSpriteRow(uint8_t sprite_byte, int x, int y) noexcept
     {
-        int x_value = gp_regs[inst.second_nibble] & (DISPLAY_WIDTH - 1);
-        int y_value = gp_regs[inst.third_nibble] & (DISPLAY_HEIGHT - 1);
+        // Iterating bit by bit from the left to the right
+        for (int j{0}; j < 8; ++j)
+        {
+            // Getting current bit
+            uint8_t mask = 1 << (7 - j); 
+            uint8_t current_pixel = (sprite_byte & mask) >> (7 - j);
+            
+            if (current_pixel)
+            {
+                if (display.get(x, y) == Pixel::on)
+                {
+                    display.set(x, y, Pixel::off);
+                    gp_regs[0xF] = 1;
+                }
+                else
+                {
+                    display.set(x, y, Pixel::on);
+                }
+            }
+
+            x++;
+            if (x >= DISPLAY_WIDTH)
+                break;
+        }
+    }
+
+    void drawOnDisplay(const Instruction& inst) noexcept
+    {
+        int x = gp_regs[inst.second_nibble] & (DISPLAY_WIDTH - 1);
+        int y = gp_regs[inst.third_nibble] & (DISPLAY_HEIGHT - 1);
         gp_regs[0xF] = 0;
 
         for (int i{0}; i < inst.fourth_nibble; ++i)
         {
-            uint8_t sprite_data = memory.getByte(index_reg);
-            for (int j{0}; j < 8; ++j)
-            {
-                uint8_t mask = 1 << (7 - j);
-                uint8_t current_pixel = (sprite_data & mask) >> (7 - j);
-                
-                if (current_pixel)
-                {
-                    if (display.get(x_value, y_value) == Pixel::on)
-                    {
-                        display.set(x_value, y_value, Pixel::off);
-                        gp_regs[0xF] = 1;
-                    }
-                    else
-                    {
-                        display.set(x_value, y_value, Pixel::on);
-                    }
-                }
+            uint8_t sprite_byte = memory.getByte(index_reg + i);
+            processSpriteRow(sprite_byte, x, y);
 
-                if (x_value >= 32)
-                    break;
-                
-                x_value++;
-            }
-
-            y_value++;
-            if (y_value >= 64)
+            y++;
+            if (y >= DISPLAY_HEIGHT)
                 break;
         }
+    }
+
+public:
+    CPU(Memory& memory) noexcept
+    :   memory{memory}
+    {
+    }
+
+    const Display& getDisplay() const noexcept
+    {
+        return display;
+    }
+
+    int getProgramCounter() const noexcept
+    {
+        return program_counter;
+    }
+
+    int getIndexReg() const noexcept
+    {
+        return index_reg;
+    }
+
+    gp_regs_t getGPRegs() const noexcept
+    {
+        return gp_regs;
     }
 
     Instruction fetch() noexcept
@@ -118,25 +150,10 @@ private:
                 setIndexRegister(inst);
                 break;
             case 0xD:
-                draw(inst);
+                drawOnDisplay(inst);
                 break;
         }
     }
 
-public:
-    CPU(Memory& memory) noexcept
-    :   memory{memory}
-    {
-    }
-
-    const Display& getDisplay() const noexcept
-    {
-        return display;
-    }
-
-    void execute() noexcept
-    {
-        Instruction inst {fetch()};
-        decode(inst);
-    }
+    
 };
