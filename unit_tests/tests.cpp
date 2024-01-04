@@ -69,6 +69,7 @@ TEST(CPU, Instruction)
     EXPECT_EQ(inst.second_nibble, 0xB);
     EXPECT_EQ(inst.third_nibble, 0xC);
     EXPECT_EQ(inst.fourth_nibble, 0xD);
+    EXPECT_EQ(inst.word, 0xABCD);
 }
 
 TEST(CPU, setProgramCounter)
@@ -125,4 +126,106 @@ TEST(CPU, setIndexRegister)
     Instruction inst1{0xA1, 0x23};
     cpu.decode(inst1);
     EXPECT_EQ(cpu.getIndexReg(), 0x123);
+}
+
+TEST(CPU, assignment)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 0;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x10};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 7);
+}
+
+TEST(CPU, OR)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 5;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x11};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 5 | 7);
+}
+
+TEST(CPU, AND)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 5;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x12};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 5 & 7);
+}
+
+TEST(CPU, XOR)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 5;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x13};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 5 ^ 7);
+}
+
+TEST(CPU, AddWithCarry)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 5;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x14};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 12);
+    EXPECT_EQ(gp_regs[0xF], 0);
+
+    gp_regs[0x0] = 250;
+    gp_regs[0x1] = 9;
+
+    Instruction inst2{0x80, 0x14};
+    cpu.decode(inst2);
+    EXPECT_EQ(gp_regs[0x0], 3);
+    EXPECT_EQ(gp_regs[0xF], 1);
+}
+
+TEST(CPU, Subtract)
+{
+    MockMemory memory;
+    CPU cpu {memory};
+    gp_regs_t& gp_regs {cpu.getGPRegs()};
+
+    gp_regs[0x0] = 12;
+    gp_regs[0x1] = 7;
+
+    Instruction inst1{0x80, 0x15};
+    cpu.decode(inst1);
+    EXPECT_EQ(gp_regs[0x0], 5);
+    EXPECT_EQ(gp_regs[0xF], 1);
+
+    gp_regs[0x0] = 5;
+    gp_regs[0x1] = 9;
+
+    Instruction inst2{0x80, 0x15};
+    cpu.decode(inst2);
+    EXPECT_EQ(gp_regs[0x0], 252);
+    EXPECT_EQ(gp_regs[0xF], 0);
 }

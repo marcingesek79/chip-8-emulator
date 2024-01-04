@@ -8,6 +8,7 @@ struct Instruction
     uint8_t second_nibble;
     uint8_t third_nibble;
     uint8_t fourth_nibble;
+    uint32_t word;
 
     Instruction(uint8_t first_byte, uint8_t second_byte)
     {
@@ -15,6 +16,8 @@ struct Instruction
         second_nibble = (first_byte & 0x0F);
         third_nibble = (second_byte & 0xF0) >> 4;
         fourth_nibble = (second_byte & 0x0F);
+
+        word = (first_byte << 8) | second_byte;
     }
 };
 
@@ -95,6 +98,40 @@ private:
         }
     }
 
+    void assignment(const Instruction& inst) noexcept
+    {
+        gp_regs[inst.second_nibble] = gp_regs[inst.third_nibble];
+    }
+
+    void OR(const Instruction& inst) noexcept
+    {
+        gp_regs[inst.second_nibble] |= gp_regs[inst.third_nibble];
+    }
+
+    void AND(const Instruction& inst) noexcept
+    {
+        gp_regs[inst.second_nibble] &= gp_regs[inst.third_nibble];
+    }
+
+    void XOR(const Instruction& inst) noexcept
+    {
+        gp_regs[inst.second_nibble] ^= gp_regs[inst.third_nibble];
+    }
+
+    void AddWithCarry(const Instruction& inst) noexcept
+    {
+        int result = gp_regs[inst.second_nibble] + gp_regs[inst.third_nibble];
+        gp_regs[0xF] = result > 0xFF;
+        gp_regs[inst.second_nibble] += gp_regs[inst.third_nibble];
+    }
+
+    void Subtract(const Instruction& inst) noexcept
+    {
+        int result = gp_regs[inst.second_nibble] - gp_regs[inst.third_nibble];
+        gp_regs[0xF] = !(result < 0);
+        gp_regs[inst.second_nibble] -= gp_regs[inst.third_nibble];
+    }
+
 public:
     CPU(Memory& memory) noexcept
     :   memory{memory}
@@ -121,6 +158,11 @@ public:
         return gp_regs;
     }
 
+    gp_regs_t& getGPRegs() noexcept
+    {
+        return gp_regs;
+    }
+
     Instruction fetch() noexcept
     {
         uint8_t first_byte = memory.getByte(program_counter);
@@ -132,28 +174,53 @@ public:
 
     void decode(const Instruction& inst) noexcept
     {
-        switch (inst.first_nibble)
+        if (inst.word == 0x00E0)
         {
-            case 0:
-                display.clear();
-                break;
-            case 1:
-                setProgramCounter(inst);
-                break;
-            case 6:
-                setRegister(inst);
-                break;
-            case 7:
-                addToRegister( inst);
-                break;
-            case 0xA:
-                setIndexRegister(inst);
-                break;
-            case 0xD:
-                drawOnDisplay(inst);
-                break;
+            display.clear();
+        }
+        else if (inst.first_nibble == 0x1)
+        {
+            setProgramCounter(inst);
+        }
+        else if (inst.first_nibble == 0x6)
+        {
+            setRegister(inst);
+        }
+        else if (inst.first_nibble == 0x7)
+        {
+            addToRegister(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x0)
+        {
+            assignment(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x1)
+        {
+            OR(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x2)
+        {
+            AND(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x3)
+        {
+            XOR(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x4)
+        {
+            AddWithCarry(inst);
+        }
+        else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x5)
+        {
+            Subtract(inst);
+        }
+        else if (inst.first_nibble == 0xA)
+        {
+            setIndexRegister(inst);
+        }
+        else if (inst.first_nibble == 0xD)
+        {
+            drawOnDisplay(inst);
         }
     }
-
-    
 };
