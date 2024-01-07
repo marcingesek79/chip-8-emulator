@@ -115,7 +115,7 @@ Instruction CPU::fetch() noexcept
 
 void CPU::decode(const Instruction& inst) noexcept
 {
-    if (inst.word == 0x00E0)
+    if (inst.asWord == 0x00E0)
     {
         display.clear();
     }

@@ -8,52 +8,10 @@ class Memory
 private:
     memory_t memory_buffer{};
     
-    void loadFonts() noexcept
-    {
-        std::array<uint8_t, font_buffer::SIZE> font_buffer = {
-            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-            0x20, 0x60, 0x20, 0x20, 0x70, // 1
-            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-            0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-        };
-
-        std::copy(std::begin(font_buffer), std::end(font_buffer), std::begin(memory_buffer) + font_buffer::OFFSET);
-    }
+    void loadFonts() noexcept;
 
 public:
-    Memory() noexcept
-    {
-        loadFonts();
-    }
-
-    void loadProgram(const std::string& bin_path) noexcept
-    {
-        std::ifstream ifs {bin_path, std::ios::binary};
-
-        // 0x000 to 0x1FF is reserved
-        int idx {memory::PROGRAM_OFFSET};
-
-        while (ifs.good())
-        {
-            memory_buffer[idx] = ifs.get();
-            idx++;
-        }
-    }
-
-    uint8_t getByte(int offset) const noexcept
-    {
-        return memory_buffer[offset];
-    }
+    Memory() noexcept;
+    void loadProgram(const std::string& bin_path) noexcept;
+    [[nodiscard]] uint8_t getByte(int offset) const noexcept;
 };

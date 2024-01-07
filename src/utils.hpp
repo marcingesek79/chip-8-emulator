@@ -29,5 +29,3 @@ namespace font_buffer
     constexpr int SIZE {80};
     constexpr int OFFSET {0x50};
 }
-
-

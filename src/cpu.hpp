@@ -1,23 +1,23 @@
 #pragma once
 #include "memory.hpp"
 #include "display.hpp"
+#include <iostream>
 
 struct Instruction
 {
-    uint8_t first_nibble;
-    uint8_t second_nibble;
-    uint8_t third_nibble;
-    uint8_t fourth_nibble;
-    uint32_t word;
+    uint32_t first_nibble : 4;
+    uint32_t second_nibble : 4;
+    uint32_t third_nibble : 4;
+    uint32_t fourth_nibble : 4;
+    uint32_t asWord : 16;
 
-    Instruction(uint8_t first_byte, uint8_t second_byte) noexcept
+    constexpr Instruction(uint8_t first_byte, uint8_t second_byte) noexcept :
+        first_nibble {static_cast<uint32_t>(first_byte & 0xF0) >> 4},
+        second_nibble {static_cast<uint32_t>(first_byte & 0x0F)},
+        third_nibble {static_cast<uint32_t>(second_byte & 0xF0) >> 4},
+        fourth_nibble {static_cast<uint32_t>(second_byte & 0x0F)},
+        asWord {static_cast<uint32_t>((first_byte << 8) | second_byte)}
     {
-        first_nibble = (first_byte & 0xF0) >> 4;
-        second_nibble = (first_byte & 0x0F);
-        third_nibble = (second_byte & 0xF0) >> 4;
-        fourth_nibble = (second_byte & 0x0F);
-
-        word = (first_byte << 8) | second_byte;
     }
 };
 
