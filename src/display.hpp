@@ -7,7 +7,7 @@ enum class Pixel
     on = 1
 };
 
-using display_t = std::array<std::array<Pixel, DISPLAY_WIDTH>, DISPLAY_HEIGHT>;
+using display_t = std::array<std::array<Pixel, display::WIDTH>, display::HEIGHT>;
 
 class Display
 {
@@ -15,7 +15,7 @@ private:
     display_t display_buffer {};
 
 public:
-    constexpr Pixel get(int x, int y) const noexcept
+    [[nodiscard]] constexpr Pixel get(int x, int y) const noexcept
     {
         return display_buffer[y][x];
     }
@@ -27,11 +27,11 @@ public:
 
     constexpr void clear() noexcept
     {
-        for (int y{0}; y < DISPLAY_HEIGHT; ++y)
+        for (int y{0}; y < display::HEIGHT; ++y)
         {
-            for (int x{0}; x < DISPLAY_WIDTH; ++x)
+            for (int x{0}; x < display::WIDTH; ++x)
             {
-                this->set(x, y, Pixel::off);
+                set(x, y, Pixel::off);
             }
         }
     }

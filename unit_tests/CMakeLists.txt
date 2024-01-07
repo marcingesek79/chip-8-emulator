@@ -12,10 +12,13 @@ enable_testing()
 
 add_executable(unit_tests tests.cpp)
 
+target_include_directories(unit_tests PUBLIC ../src)
+
 target_link_libraries(
   unit_tests
   GTest::gtest_main
   gmock_main
+  chip8-emulator-lib
 )
 
 include(GoogleTest)

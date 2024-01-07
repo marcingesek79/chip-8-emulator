@@ -1,7 +1,7 @@
 #pragma once
 #include "utils.hpp"
 
-using memory_t = std::array<uint8_t, MEMORY_SIZE>;
+using memory_t = std::array<uint8_t, memory::SIZE>;
 
 class Memory
 {
@@ -10,7 +10,7 @@ private:
     
     void loadFonts() noexcept
     {
-        std::array<uint8_t, FONT_BUFFER_SIZE> font_buffer = {
+        std::array<uint8_t, font_buffer::SIZE> font_buffer = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
             0x20, 0x60, 0x20, 0x20, 0x70, // 1
             0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -29,7 +29,7 @@ private:
             0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
 
-        std::copy(std::begin(font_buffer), std::end(font_buffer), std::begin(memory_buffer) + FONT_BUFFER_OFFSET);
+        std::copy(std::begin(font_buffer), std::end(font_buffer), std::begin(memory_buffer) + font_buffer::OFFSET);
     }
 
 public:
@@ -43,7 +43,7 @@ public:
         std::ifstream ifs {bin_path, std::ios::binary};
 
         // 0x000 to 0x1FF is reserved
-        int idx {PROGRAM_OFFSET};
+        int idx {memory::PROGRAM_OFFSET};
 
         while (ifs.good())
         {

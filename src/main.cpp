@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     Memory memory;
     memory.loadProgram(bin_path);
 
-    Emulator emulator{memory};
+    Emulator emulator {&memory};
     emulator.run();
 
     return 0;
