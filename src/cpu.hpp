@@ -58,7 +58,7 @@ private:
 public:
     Display display {};
     gp_regs_t gp_regs {};
-    int program_counter {};
+    int program_counter {memory::PROGRAM_OFFSET};
     int index_reg {};
     Instruction inst;
     std::stack<int> cpu_stack {};
