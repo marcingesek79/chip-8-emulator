@@ -38,8 +38,8 @@ void Emulator::run() noexcept
                 window.close();
         }
 
-        Instruction inst {cpu.fetch()};
-        cpu.decode(inst);
+        cpu.fetch();
+        cpu.decode();
 
         draw();
 

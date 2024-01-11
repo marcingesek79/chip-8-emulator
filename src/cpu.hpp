@@ -2,6 +2,7 @@
 #include "memory.hpp"
 #include "display.hpp"
 #include <iostream>
+#include <stack>
 
 struct Instruction
 {
@@ -10,6 +11,15 @@ struct Instruction
     uint32_t third_nibble : 4;
     uint32_t fourth_nibble : 4;
     uint32_t asWord : 16;
+
+    constexpr Instruction() noexcept :
+        first_nibble{},
+        second_nibble{},
+        third_nibble{},
+        fourth_nibble{},
+        asWord{}
+    {
+    }
 
     constexpr Instruction(uint8_t first_byte, uint8_t second_byte) noexcept :
         first_nibble {static_cast<uint32_t>(first_byte & 0xF0) >> 4},
@@ -31,26 +41,30 @@ private:
     void processSpriteRow(uint8_t sprite_byte, int x, int y) noexcept;
 
     // Instruction set
-    void setProgramCounter(const Instruction& inst) noexcept;
-    void setRegister(const Instruction& inst) noexcept;
-    void addToRegister(const Instruction& inst) noexcept;
-    void setIndexRegister(const Instruction& inst) noexcept;
-    void drawOnDisplay(const Instruction& inst) noexcept;
-    void assignment(const Instruction& inst) noexcept;
-    void OR(const Instruction& inst) noexcept;
-    void AND(const Instruction& inst) noexcept;
-    void XOR(const Instruction& inst) noexcept;
-    void AddWithCarry(const Instruction& inst) noexcept;
-    void Subtract(const Instruction& inst) noexcept;
+    void setProgramCounter() noexcept;
+    void setRegister() noexcept;
+    void addToRegister() noexcept;
+    void setIndexRegister() noexcept;
+    void drawOnDisplay() noexcept;
+    void assignment() noexcept;
+    void OR() noexcept;
+    void AND() noexcept;
+    void XOR() noexcept;
+    void addWithCarry() noexcept;
+    void subtract() noexcept;
+    void callSubroutine() noexcept;
+    void returnFromSubroutine() noexcept;
 
 public:
     Display display {};
     gp_regs_t gp_regs {};
     int program_counter {};
     int index_reg {};
+    Instruction inst;
+    std::stack<int> cpu_stack {};
 
     explicit CPU(Memory* memory) noexcept;
-    [[nodiscard]] Instruction fetch() noexcept;
 
-    void decode(const Instruction& inst) noexcept;
+    void fetch() noexcept;
+    void decode() noexcept;
 };

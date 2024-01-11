@@ -77,12 +77,12 @@ TEST(CPU, setProgramCounter)
     MockMemory memory;
     CPU cpu {&memory};
 
-    Instruction inst1 {0x1B, 0xCD};
-    cpu.decode(inst1);
+    cpu.inst = {0x1B, 0xCD};
+    cpu.decode();
     EXPECT_EQ(cpu.program_counter, 0xBCD);
 
-    Instruction inst2 {0x12, 0x00};
-    cpu.decode(inst2);
+    cpu.inst = {0x12, 0x00};
+    cpu.decode();
     EXPECT_EQ(cpu.program_counter, 0x200);
 }
 
@@ -91,16 +91,16 @@ TEST(CPU, setRegister)
     MockMemory memory;
     CPU cpu {&memory};
 
-    Instruction inst1 {0x61, 0x11};
-    cpu.decode(inst1);
+    cpu.inst = {0x61, 0x11};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x1], 0x11);
 
-    Instruction inst2 {0x6A, 0x22};
-    cpu.decode(inst2);
+    cpu.inst = {0x6A, 0x22};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0xA], 0x22);
 
-    Instruction inst3 {0x65, 0x33};
-    cpu.decode(inst3);
+    cpu.inst = {0x65, 0x33};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x5], 0x33);
 }
 
@@ -109,12 +109,12 @@ TEST(CPU, addToRegister)
     MockMemory memory;
     CPU cpu {&memory};
 
-    Instruction inst1 {0x71, 0x11};
-    cpu.decode(inst1);
+    cpu.inst = {0x71, 0x11};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x1], 0x11);
 
-    Instruction inst2 {0x71, 0x22};
-    cpu.decode(inst2);
+    cpu.inst = {0x71, 0x22};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x1], 0x33);
 }
 
@@ -123,8 +123,8 @@ TEST(CPU, setIndexRegister)
     MockMemory memory;
     CPU cpu {&memory};
 
-    Instruction inst1 {0xA1, 0x23};
-    cpu.decode(inst1);
+    cpu.inst = {0xA1, 0x23};
+    cpu.decode();
     EXPECT_EQ(cpu.index_reg, 0x123);
 }
 
@@ -136,8 +136,8 @@ TEST(CPU, assignment)
     cpu.gp_regs[0x0] = 0;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x10};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x10};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 7);
 }
 
@@ -149,8 +149,8 @@ TEST(CPU, OR)
     cpu.gp_regs[0x0] = 5;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x11};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x11};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 5 | 7);
 }
 
@@ -162,8 +162,8 @@ TEST(CPU, AND)
     cpu.gp_regs[0x0] = 5;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x12};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x12};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 5 & 7);
 }
 
@@ -175,12 +175,12 @@ TEST(CPU, XOR)
     cpu.gp_regs[0x0] = 5;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x13};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x13};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 5 ^ 7);
 }
 
-TEST(CPU, AddWithCarry)
+TEST(CPU, addWithCarry)
 {
     MockMemory memory;
     CPU cpu {&memory};
@@ -188,21 +188,21 @@ TEST(CPU, AddWithCarry)
     cpu.gp_regs[0x0] = 5;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x14};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x14};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 12);
     EXPECT_EQ(cpu.gp_regs[0xF], 0);
 
     cpu.gp_regs[0x0] = 250;
     cpu.gp_regs[0x1] = 9;
 
-    Instruction inst2 {0x80, 0x14};
-    cpu.decode(inst2);
+    cpu.inst = {0x80, 0x14};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 3);
     EXPECT_EQ(cpu.gp_regs[0xF], 1);
 }
 
-TEST(CPU, Subtract)
+TEST(CPU, subtract)
 {
     MockMemory memory;
     CPU cpu {&memory};
@@ -210,16 +210,44 @@ TEST(CPU, Subtract)
     cpu.gp_regs[0x0] = 12;
     cpu.gp_regs[0x1] = 7;
 
-    Instruction inst1 {0x80, 0x15};
-    cpu.decode(inst1);
+    cpu.inst = {0x80, 0x15};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 5);
     EXPECT_EQ(cpu.gp_regs[0xF], 1);
 
     cpu.gp_regs[0x0] = 5;
     cpu.gp_regs[0x1] = 9;
 
-    Instruction inst2 {0x80, 0x15};
-    cpu.decode(inst2);
+    cpu.inst = {0x80, 0x15};
+    cpu.decode();
     EXPECT_EQ(cpu.gp_regs[0x0], 252);
     EXPECT_EQ(cpu.gp_regs[0xF], 0);
+}
+
+TEST(CPU, callSubroutine)
+{
+    MockMemory memory;
+    CPU cpu {&memory};
+
+    cpu.program_counter = 0x111;
+    cpu.inst = {0x21, 0x23};
+    cpu.decode();
+
+    EXPECT_EQ(cpu.cpu_stack.top(), 0x111);
+    EXPECT_EQ(cpu.program_counter, 0x123);
+}
+
+TEST(CPU, returnFromSubroutine)
+{
+    MockMemory memory;
+    CPU cpu {&memory};
+
+    cpu.program_counter = 0x111;
+    cpu.inst = {0x21, 0x23};
+    cpu.decode();
+
+    cpu.inst = {0x00, 0xEE};
+    cpu.decode();
+    EXPECT_EQ(cpu.program_counter, 0x111);
+    EXPECT_EQ(cpu.cpu_stack.size(), 0);
 }
