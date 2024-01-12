@@ -287,3 +287,14 @@ TEST(CPU, shiftLeft)
     EXPECT_EQ(cpu.gp_regs[0], static_cast<uint8_t>(0x82 << 1));
     EXPECT_EQ(cpu.gp_regs[0xF], 1);
 }
+
+TEST(CPU, jumpWithOffset)
+{
+    MockMemory memory;
+    CPU cpu {&memory};
+
+    cpu.gp_regs[0] = 0x2;
+    cpu.inst = {0xB1, 0x23};
+    cpu.decode();
+    EXPECT_EQ(cpu.program_counter, 0x125);
+}

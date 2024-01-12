@@ -127,6 +127,12 @@ void CPU::shiftRight() noexcept
     gp_regs[0xF] = lsb ? 1 : 0;
 }
 
+void CPU::jumpWithOffset() noexcept
+{
+    program_counter = (inst.second_nibble << 8) | (inst.third_nibble << 4) | inst.fourth_nibble;
+    program_counter += gp_regs[0];
+}
+
 CPU::CPU(Memory* memory) noexcept
     : memory{memory}
 {
@@ -202,6 +208,10 @@ void CPU::decode() noexcept
     else if (inst.first_nibble == 0xA)
     {
         setIndexRegister();
+    }
+    else if (inst.first_nibble == 0xB)
+    {
+        jumpWithOffset();
     }
     else if (inst.first_nibble == 0xD)
     {

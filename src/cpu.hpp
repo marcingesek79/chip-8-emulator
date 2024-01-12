@@ -56,6 +56,7 @@ private:
     void returnFromSubroutine() noexcept;
     void shiftLeft() noexcept;
     void shiftRight() noexcept;
+    void jumpWithOffset() noexcept;
 
 public:
     Display display {};
