@@ -111,6 +111,22 @@ void CPU::returnFromSubroutine() noexcept
     cpu_stack.pop();
 }
 
+void CPU::shiftLeft() noexcept
+{
+    gp_regs[inst.second_nibble] = gp_regs[inst.third_nibble];
+    int msb {(gp_regs[inst.second_nibble] & 0x80) >> 7};
+    gp_regs[inst.second_nibble] <<= 1;
+    gp_regs[0xF] = msb ? 1 : 0;
+}
+
+void CPU::shiftRight() noexcept
+{
+    gp_regs[inst.second_nibble] = gp_regs[inst.third_nibble];
+    int lsb {gp_regs[inst.second_nibble] & 0x1};
+    gp_regs[inst.second_nibble] >>= 1;
+    gp_regs[0xF] = lsb ? 1 : 0;
+}
+
 CPU::CPU(Memory* memory) noexcept
     : memory{memory}
 {
@@ -174,6 +190,14 @@ void CPU::decode() noexcept
     else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x5)
     {
         subtract();
+    }
+    else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0x6)
+    {
+        shiftRight();
+    }
+    else if (inst.first_nibble == 0x8 && inst.fourth_nibble == 0xE)
+    {
+        shiftLeft();
     }
     else if (inst.first_nibble == 0xA)
     {

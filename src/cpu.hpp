@@ -54,6 +54,8 @@ private:
     void subtract() noexcept;
     void callSubroutine() noexcept;
     void returnFromSubroutine() noexcept;
+    void shiftLeft() noexcept;
+    void shiftRight() noexcept;
 
 public:
     Display display {};

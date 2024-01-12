@@ -251,3 +251,39 @@ TEST(CPU, returnFromSubroutine)
     EXPECT_EQ(cpu.program_counter, 0x111);
     EXPECT_EQ(cpu.cpu_stack.size(), 0);
 }
+
+TEST(CPU, shiftRight)
+{
+    MockMemory memory;
+    CPU cpu {&memory};
+
+    cpu.gp_regs[1] = 0x11;
+    cpu.inst = {0x80, 0x16};
+    cpu.decode();
+    EXPECT_EQ(cpu.gp_regs[0], 0x11 >> 1);
+    EXPECT_EQ(cpu.gp_regs[0xF], 1);
+
+    cpu.gp_regs[1] = 0x82;
+    cpu.inst = {0x80, 0x16};
+    cpu.decode();
+    EXPECT_EQ(cpu.gp_regs[0], 0x82 >> 1);
+    EXPECT_EQ(cpu.gp_regs[0xF], 0);
+}
+
+TEST(CPU, shiftLeft)
+{
+    MockMemory memory;
+    CPU cpu {&memory};
+
+    cpu.gp_regs[1] = 0x12;
+    cpu.inst = {0x80, 0x1E};
+    cpu.decode();
+    EXPECT_EQ(cpu.gp_regs[0], static_cast<uint8_t>(0x12 << 1));
+    EXPECT_EQ(cpu.gp_regs[0xF], 0);
+
+    cpu.gp_regs[1] = 0x82;
+    cpu.inst = {0x80, 0x1E};
+    cpu.decode();
+    EXPECT_EQ(cpu.gp_regs[0], static_cast<uint8_t>(0x82 << 1));
+    EXPECT_EQ(cpu.gp_regs[0xF], 1);
+}
