@@ -133,6 +133,15 @@ void CPU::jumpWithOffset() noexcept
     program_counter += gp_regs[0];
 }
 
+void CPU::random() noexcept
+{
+    std::mt19937 mt {std::random_device{}()};
+    std::uniform_int_distribution generate {0, 0xFF}; // generate uint8_t
+    uint8_t generated_number {static_cast<uint8_t>(generate(mt))};
+    generated_number &= ((inst.third_nibble << 4) | inst.fourth_nibble);
+    gp_regs[inst.second_nibble] = generated_number;
+}
+
 CPU::CPU(Memory* memory) noexcept
     : memory{memory}
 {
@@ -212,6 +221,10 @@ void CPU::decode() noexcept
     else if (inst.first_nibble == 0xB)
     {
         jumpWithOffset();
+    }
+    else if (inst.first_nibble == 0xC)
+    {
+        random();
     }
     else if (inst.first_nibble == 0xD)
     {

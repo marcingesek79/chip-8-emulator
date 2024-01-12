@@ -3,6 +3,7 @@
 #include "display.hpp"
 #include <iostream>
 #include <stack>
+#include <random>
 
 struct Instruction
 {
@@ -57,6 +58,7 @@ private:
     void shiftLeft() noexcept;
     void shiftRight() noexcept;
     void jumpWithOffset() noexcept;
+    void random() noexcept;
 
 public:
     Display display {};
