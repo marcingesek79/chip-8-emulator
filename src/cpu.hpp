@@ -4,6 +4,9 @@
 #include <iostream>
 #include <stack>
 #include <random>
+#include <mutex>
+#include <thread>
+#include <chrono>
 
 struct Instruction
 {
@@ -38,9 +41,13 @@ class CPU
 {
 private:
     Memory* memory;
+    uint8_t delay_timer {10};
+    uint8_t sound_timer {200};
+    static std::mutex delay_timer_mutex;
+    static std::mutex sound_timer_mutex;
     
     void processSpriteRow(uint8_t sprite_byte, int x, int y) noexcept;
-
+    
     // Instruction set
     void setProgramCounter() noexcept;
     void setRegister() noexcept;
@@ -59,6 +66,9 @@ private:
     void shiftRight() noexcept;
     void jumpWithOffset() noexcept;
     void random() noexcept;
+    void assignDelayTimer() noexcept;
+    void setDelayTimer() noexcept;
+    void setSoundTimer() noexcept;
 
 public:
     Display display {};
@@ -69,6 +79,9 @@ public:
     std::stack<int> cpu_stack {};
 
     explicit CPU(Memory* memory) noexcept;
+
+    void decreaseDelayTimer() noexcept;
+    void decreaseSoundTimer() noexcept;
 
     void fetch() noexcept;
     void decode() noexcept;

@@ -29,3 +29,8 @@ namespace font_buffer
     constexpr int SIZE {80};
     constexpr int OFFSET {0x50};
 }
+
+namespace timer
+{
+    constexpr int TIMER_FREQ_IN_MILLISECONDS { 1000 / 60 + 1 };
+}

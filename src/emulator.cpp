@@ -28,6 +28,9 @@ Emulator::Emulator(Memory* memory) noexcept :
 
 void Emulator::run() noexcept
 {
+    std::thread delay_timer_thread {&CPU::decreaseDelayTimer, &cpu};
+    std::thread sound_timer_thread {&CPU::decreaseSoundTimer, &cpu};
+
     while (window.isOpen())
     {
         window.clear();
@@ -44,5 +47,5 @@ void Emulator::run() noexcept
         draw();
 
         window.display();
-    }    
+    }   
 }

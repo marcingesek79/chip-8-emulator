@@ -1,5 +1,8 @@
 #include "cpu.hpp"
 
+std::mutex CPU::delay_timer_mutex;
+std::mutex CPU::sound_timer_mutex;
+
 void CPU::processSpriteRow(uint8_t sprite_byte, int x, int y) noexcept
 {
     // Iterating bit by bit from the left to the right
@@ -25,6 +28,34 @@ void CPU::processSpriteRow(uint8_t sprite_byte, int x, int y) noexcept
         x++;
         if (x >= display::WIDTH)
             break;
+    }
+}
+
+void CPU::decreaseDelayTimer() noexcept
+{   
+    while (1)
+    {
+        std::lock_guard<std::mutex> guard {CPU::delay_timer_mutex};
+        delay_timer -= (delay_timer > 0);
+        std::cout << "\nDelay: " << static_cast<int>(delay_timer) << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(timer::TIMER_FREQ_IN_MILLISECONDS));
+    }
+}
+
+void CPU::decreaseSoundTimer() noexcept
+{
+    while (1)
+    {
+        std::lock_guard<std::mutex> guard {CPU::sound_timer_mutex};
+
+        if (sound_timer > 0)
+        {
+            std::cout << '\a';
+            sound_timer -= 1;
+        }
+
+        std::cout << "\nSound: " << static_cast<int>(sound_timer) << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(timer::TIMER_FREQ_IN_MILLISECONDS));
     }
 }
 
@@ -142,6 +173,24 @@ void CPU::random() noexcept
     gp_regs[inst.second_nibble] = generated_number;
 }
 
+void CPU::assignDelayTimer() noexcept
+{
+    std::lock_guard<std::mutex> guard {CPU::delay_timer_mutex};
+    gp_regs[inst.second_nibble] = delay_timer;
+}
+
+void CPU::setDelayTimer() noexcept
+{
+    std::lock_guard<std::mutex> guard {CPU::delay_timer_mutex};
+    delay_timer = gp_regs[inst.second_nibble];
+}
+
+void CPU::setSoundTimer() noexcept
+{
+    std::lock_guard<std::mutex> guard {CPU::sound_timer_mutex};
+    sound_timer = gp_regs[inst.second_nibble];
+}
+
 CPU::CPU(Memory* memory) noexcept
     : memory{memory}
 {
@@ -229,5 +278,23 @@ void CPU::decode() noexcept
     else if (inst.first_nibble == 0xD)
     {
         drawOnDisplay();
+    }
+    else if (inst.first_nibble == 0xF && 
+            inst.third_nibble == 0x0 && 
+            inst.fourth_nibble == 0x7)
+    {
+        assignDelayTimer();
+    }
+    else if (inst.first_nibble == 0xF &&
+            inst.third_nibble == 0x1 &&
+            inst.fourth_nibble == 0x5)
+    {
+        setDelayTimer();
+    }
+    else if (inst.first_nibble == 0xF &&
+            inst.third_nibble == 0x1 &&
+            inst.fourth_nibble == 0x8)
+    {
+        setSoundTimer();
     }
 }
